@@ -1,7 +1,7 @@
 from mks.models import Party, Member
 from facebook_feeds.models import Tag, Facebook_Status, Facebook_Feed, Feed_Popularity
 from django.db.models import F, Count
-from kikar_hamedina.settings.base import FACEBOOK_APP_ID, CURRENT_KNESSET_NUMBER
+from kikar_hamedina.settings import FACEBOOK_APP_ID, CURRENT_KNESSET_NUMBER
 
 
 NUMBER_OF_TOP_PARTIES_TO_BRING = 12

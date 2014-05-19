@@ -20,4 +20,6 @@ pandas==0.13.1
 django-pandas==0.1.0
 python-dateutil==1.5
 django-tastypie==0.9.15
+-e git://github.com/rmaceissoft/django-facebook-realtime.git@e6b9f5625084ee1a4f019010e905f5b638f795ea#egg=django-facebook-realtime
+
 -r oknesset.txt

@@ -1,0 +1,9 @@
+# This file defines parameters for the specific server deployment
+# It must define (directly or via import):
+# SECRET_KEY, FACEBOOK_SECRET_KEY and FACEBOOK_APP_ID
+
+from key import *
+from local import *
+
+FACEBOOK_SECRET_KEY = 'YOUR_FACEBOOK_SECRET_KEY'
+FACEBOOK_APP_ID = 'YOUR_FACEBOOK_APP_ID'

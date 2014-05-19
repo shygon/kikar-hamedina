@@ -3,7 +3,7 @@ from rest_framework.urlpatterns import format_suffix_patterns
 from . import views
 from facebook_feeds.models import Facebook_Status, Facebook_Feed, Tag
 from mks.models import Party, Member
-from kikar_hamedina.settings.base import CURRENT_KNESSET_NUMBER
+from kikar_hamedina.settings import CURRENT_KNESSET_NUMBER
 from tastypie.api import Api
 from api import *
 

@@ -17,7 +17,7 @@ from django.conf import settings
 from mks.models import Knesset
 from facebook_feeds.models import Facebook_Status, Facebook_Feed, Tag, User_Token, Feed_Popularity
 from mks.models import Party, Member
-from kikar_hamedina.settings.base import CURRENT_KNESSET_NUMBER
+from kikar_hamedina.settings import CURRENT_KNESSET_NUMBER
 
 HOURS_SINCE_PUBLICATION_FOR_SIDE_BAR = 3
 

@@ -1,54 +1,70 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant::Config.run do |config|
-  # All Vagrant configuration is done here. The most common configuration
-  # options are documented and commented below. For a complete reference,
-  # please see the online documentation at vagrantup.com.
+VAGRANTFILE_API_VERSION = "2"
 
-  # Every Vagrant virtual environment requires a box to build off of.
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "precise64"
-
-  # The url from where the 'config.vm.box' box will be fetched if it
-  # doesn't already exist on the user's system.
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
-  # Boot with a GUI so you can see the screen. (Default is headless)
-  # config.vm.boot_mode = :gui
-
-  # Assign this VM to a host-only network IP, allowing you to access it
-  # via the IP. Host-only networks can talk to the host machine as well as
-  # any other machines on the same network, but cannot be accessed (through this
-  # network interface) by any external networks.
-  # config.vm.network :hostonly, "192.168.33.10"
-
-  # Assign this VM to a bridged network, allowing you to connect directly to a
-  # network using the host's network device. This makes the VM appear as another
-  # physical device on your network.
-  # config.vm.network :bridged
-
-  # Forward a port from the guest to the host, which allows for outside
-  # computers to access the VM, whereas host only networking does not.
-  # config.vm.forward_port 80, 8080
-  config.vm.forward_port 8000, 8888
-
-  # Share an additional folder to the guest VM. The first argument is
-  # an identifier, the second is the path on the guest to mount the
-  # folder, and the third is the path on the host to the actual folder.
-  # config.vm.share_folder "v-data", "/vagrant_data", "../data"
-
-  # Enable provisioning with chef solo, specifying a cookbooks path, roles
-  # path, and data_bags path (all relative to this Vagrantfile), and adding 
-  # some recipes and/or roles.
+  config.vm.network "private_network", ip: "192.168.100.100"
+  config.vm.network :forwarded_port, guest: 8000, host: 8000
 
   config.vm.provision :shell, :inline => "apt-get update"
-  config.vm.provision :shell, :inline => "apt-get install -y postgresql postgresql-contrib python-dev python-pip libpq-dev git-core"
+
+  config.vm.provision :shell, :inline => "apt-get install -y postgresql postgresql-contrib python-dev python-pip libpq-dev git-core build-essential"
+
+  # Generate config files and initialize DB
+  config.vm.provision :shell do |shell|
+    shell.inline = <<-EOS
+      set -e
+
+      # Create basic settings
+      echo "# Auto generated code - do not edit
+SECRET_KEY = '$(base64 /dev/urandom | head -c 50)'
+" > /vagrant/kikar_hamedina/kikar_hamedina/settings/key.py
+
+      # Create posresql 'admin' user
+      sudo -u postgres psql -c "DROP DATABASE IF EXISTS kikar_hamedina"
+      sudo -u postgres psql -c "DROP ROLE IF EXISTS admin"
+      sudo -u postgres psql -c "CREATE USER admin WITH PASSWORD '123456'"
+      sudo -u postgres psql -c "CREATE DATABASE kikar_hamedina TEMPLATE=template0 ENCODING='UTF8' LC_CTYPE='en_US.utf8' LC_COLLATE='en_US.UTF-8'"
+    EOS
+  end
+
+  # pip requirements
+  config.vm.provision :shell do |shell|
+    shell.inline = <<-EOS
+      set -e
+      # Do 2 pip tries as sometimes repositories fail to respond
+      PIP="pip install -r /vagrant/requirements/vps.txt"
+      $PIP || $PIP
+    EOS
+  end
+
+  # Django setup
+  config.vm.provision :shell do |shell|
+    shell.inline = <<-EOS
+      set -e
+      cd /vagrant/kikar_hamedina/
+      python manage.py syncdb --noinput
+      python manage.py dumpdata --indent=2 auth > initial_data.json
+      for m in core persons mks links facebook_feeds video; do
+        python manage.py migrate $m
+      done
+      for f in data_fixture_planet data_fixture_mks data_fixture_facebook_feeds; do
+        python manage.py loaddata ${f}.json
+      done
+      # TODO: fix 'username is not a member of the user table.' error
+      python manage.py fetchfeedproperties || true
+      python manage.py fetchfeedstatuses
+    EOS
+  end
 
   config.vm.provision :shell do |shell|
     shell.inline = <<-EOS
-      set -ev
-
-      pip install -r /vagrant/requirements/local.txt
+      echo 'exec python /vagrant/kikar_hamedina/manage.py runserver 0.0.0.0:8000' > /etc/init/kikar.conf
+      start kikar
     EOS
   end
 end
