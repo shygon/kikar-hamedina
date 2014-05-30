@@ -8,6 +8,8 @@ bak/
 debug.log
 kikar_hamedina/debug.log
 
+*-db-backup
+
 kikar_hamedina/kikar_hamedina/settings/deploy.py
 kikar_hamedina/kikar_hamedina/settings/key.py
 kikar_hamedina/initial_data.json

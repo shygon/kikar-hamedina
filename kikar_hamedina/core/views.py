@@ -5,7 +5,7 @@ from IPython.lib.pretty import pprint
 import facebook
 from numpy import mean
 from django.core.exceptions import FieldError
-from django.shortcuts import render
+from django.shortcuts import render, render_to_response
 from django.http import HttpResponseRedirect, HttpResponse
 from django.core.urlresolvers import reverse
 from django.views.generic.list import ListView
@@ -438,6 +438,34 @@ def status_update(request, status_id):
         response_data['shares'] = status.share_count
         response_data['id'] = status.status_id
 
+        return HttpResponse(json.dumps(response_data), content_type="application/json")
+
+#A handler for add_tag_to_status ajax call from client
+def add_tag_to_status(request):
+
+    response_data = dict()
+    response_data['success'] = False
+    status_id=request.GET["id"]
+    response_data['id'] = status_id
+    tagName=request.GET["tag_str"]
+    strippedTagName = tagName.strip()
+    try:
+        if strippedTagName:
+            tag, created = Tag.objects.get_or_create(name=strippedTagName)
+            if created:
+                tag.name = strippedTagName
+                tag.is_for_main_display = True
+                tag.save()
+                # add status to tag statuses
+            tag.statuses.add(status_id)
+            tag.save()
+            response_data['tag'] = {'id':tag.id,'name':tag.name}
+        response_data['success'] = True
+    except:
+        print "ERROR AT ADDING STATUS TO TAG"
+        print status_id
+
+    finally:
         return HttpResponse(json.dumps(response_data), content_type="application/json")
 
 

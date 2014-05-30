@@ -1,3 +1,11 @@
+{% verbatim %}
+<script id="add-tag-to-status-template" type="text/x-handlebars-template" >
+<a href="/tag/name/{{id}}">
+	<span class="label label-info">{{name}}</span>
+</a>
+</script>
+{% endverbatim %}
+
 {% load humanize %}
 {% load core_extras %}
 <div class="panel panel-primary status-panel" data-statusid="{{ status.status_id }}"
@@ -39,14 +47,15 @@ data-token="{{ access_token }}">
 			</span>
 		</div>
 		<div class="col-md-8">
-			{% if status.tags.count > 0 %}
-			<strong>תגים: </strong>
-			{% endif %}
+
+			<strong style="display:{% if status.tags.count > 0 %}inherit{% else %}none{% endif %}">תגים: </strong>
+			<span id="{{status.id}}-tags">
 			{% for tag in status.tags.all %}
 			<a href="{% url 'tag' 'name' tag.name %}">
 				<span class="label label-info">{{ tag.name }}</span>
 			</a>
 			{% endfor %}
+			</span>
 
 			<div class="pull-left">
 				<a href="{{ status | link }}" class="btn btn-info btn-xs" target="_blank">הפוסט ב-<i class="fa fa-facebook-square"></i> </a>
@@ -94,20 +103,20 @@ data-token="{{ access_token }}">
 </div>
 
 {% if user.is_authenticated %}
-<div class="col-sm-12">
+<div class="col-sm-12" data-statusid="{{status.id}}">
 	<hr>
-	<form class="form-inline" action="{% url 'add-tag' status.id %}" method="POST"
-	role="form">
-	{% csrf_token %}
-	<div class="form-group">
-		<label class="sr-only" for="add-tag">Add tag</label>
-		<input type="text" class="form-control add-tag" id="add-tag"
-		name="tag"
-		placeholder="תכניס תג (comma separated)" data-role="tagsinput">
-	</div>
+<!-- 	<form class="form-inline" action="{% url 'add-tag' status.id %}" method="POST"
+	role="form"> -->
+		{% csrf_token %}
+		<div class="form-group">
+			<label class="sr-only" for="add-tag">Add tag</label>
+			<input type="text" class="form-control add-tag-input" id="add-tag"
+			name="tag" autocomplete="off"
+			placeholder="תכניס תג (comma separated)" data-role="tagsinput">
+		</div>
 
-	<button type="submit" class="btn btn-primary">הוסף תיוגים</button>
-</form>
+		<button type="submit" class="btn btn-primary add-tag-button">הוסף תיוגים</button>
+	<!-- </form> -->
 </div>
 {% endif %}
 </div>

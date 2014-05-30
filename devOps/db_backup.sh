@@ -2,7 +2,7 @@
 # replace the postgres with Database username and the dbname with the Database name
 # save it to a tar file
 export PGPASSWORD="123456"
-pg_dump --username=postgres -h localhost -F tar kikar_hamedina > $(date "+%Y%m%d.tar")
+pg_dump --username=postgres -h localhost kikar_hamedina > $(date "+%Y%m%d-db-backup")
 # upload the DB backup to Dropbox
 python upload_backup_to_dropbox.py
 
